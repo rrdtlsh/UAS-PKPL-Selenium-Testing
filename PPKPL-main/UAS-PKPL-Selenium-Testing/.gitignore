@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.env
+.venv/
+venv/
+env/
+
+# Pytest & reports
+.pytest_cache/
+reports/*.html
+
+# Screenshots (hanya simpan folder, bukan isinya)
+screenshots/*.png
+
+# ChromeDriver cache (webdriver-manager)
+.wdm/
+
+# IDE
+.idea/
+.vscode/
+*.swp
