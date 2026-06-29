@@ -12,7 +12,18 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        /*
+        |----------------------------------------------------------------------
+        | Custom Middleware Aliases
+        |----------------------------------------------------------------------
+        |
+        | Daftarkan alias middleware di sini agar bisa digunakan pada route
+        | dengan sintaks ->middleware('role:admin') atau ->middleware('role:petugas').
+        |
+        */
+        $middleware->alias([
+            'role' => \App\Http\Middleware\RoleMiddleware::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
