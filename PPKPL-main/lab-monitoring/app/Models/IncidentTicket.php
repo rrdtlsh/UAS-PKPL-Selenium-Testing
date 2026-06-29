@@ -14,6 +14,7 @@ class IncidentTicket extends Model
     protected $fillable = [
         'storage_room_id',
         'condition_data_id',
+        'created_by',
         'deviation_level',
         'status',
     ];
@@ -36,13 +37,16 @@ class IncidentTicket extends Model
         return $this->belongsTo(ConditionData::class, 'condition_data_id');
     }
 
-    // INI YANG MEMBUAT ERROR SEBELUMNYA (Karena belum ada)
+    /**
+     * User yang memicu pembuatan tiket ini (diambil dari ConditionData.inputted_by).
+     * Kolom created_by ditambahkan via migration 2026_06_30_000001.
+     * Nullable agar data tiket lama (sebelum migration) tidak error.
+     */
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    // INI JUGA YANG MEMBUAT ERROR SEBELUMNYA (Karena belum ada)
     public function correctiveActions(): HasMany
     {
         return $this->hasMany(CorrectiveAction::class, 'incident_ticket_id');

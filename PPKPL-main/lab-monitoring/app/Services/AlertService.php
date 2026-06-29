@@ -62,9 +62,11 @@ class AlertService
     private function handleLevelTwoCritical(ConditionData $conditionData, StorageRoom $room): void
     {
         // ── 1. Buat Tiket Insiden ─────────────────────────────────────────────
+        // created_by diambil dari inputted_by ConditionData (user yang menginput data kondisi pemicu)
         $ticket = IncidentTicket::create([
             'storage_room_id'   => $room->id,
             'condition_data_id' => $conditionData->id,
+            'created_by'        => $conditionData->inputted_by,
             'deviation_level'   => '2',
             'status'            => 'open',
         ]);

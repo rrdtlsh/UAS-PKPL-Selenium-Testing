@@ -8,6 +8,8 @@ use App\Models\StorageRoom;
 use App\Models\CorrectiveAction;
 use App\Http\Controllers\IncidentReportController;
 use App\Http\Controllers\Auth\AuthController;
+use App\Services\ConditionDataService;
+use App\Services\AlertService;
 use Illuminate\Support\Facades\Auth;
 
 /*
@@ -85,37 +87,35 @@ Route::middleware('auth')->group(function () {
         ]);
     });
 
-    Route::post('/api/condition-data', function (Request $request) {
-        $room = App\Models\StorageRoom::find($request->storage_room_id);
-
-        $temp   = (float) $request->temperature;
-        $hum    = (float) $request->humidity;
-        $tLimit = (float) $room->temp_limit;
-        $hLimit = (float) $room->humidity_limit;
-
-        $color = 'green';
-
-        if ($temp > ($tLimit + 2.0) || $hum > ($hLimit + 10.0)) {
-            $color = 'red';
-        } elseif ($temp > $tLimit || $hum > $hLimit || $temp >= ($tLimit - 2.0)) {
-            $color = 'yellow';
-        }
-
-        $condition = App\Models\ConditionData::create([
-            'storage_room_id' => $request->storage_room_id,
-            'inputted_by'     => Auth::id(),
-            'temperature'     => $temp,
-            'humidity'        => $hum,
-            'indicator_color' => $color,
+    Route::post('/api/condition-data', function (Request $request, ConditionDataService $conditionDataService, AlertService $alertService) {
+        // Validasi input — konsisten dengan StoreConditionDataRequest di ConditionDataController
+        $validated = $request->validate([
+            'storage_room_id' => 'required|exists:storage_rooms,id',
+            'temperature'     => 'required|numeric|min:-50|max:100',
+            'humidity'        => 'required|numeric|min:0|max:100',
+        ], [
+            'storage_room_id.required' => 'Ruang penyimpanan wajib dipilih.',
+            'storage_room_id.exists'   => 'Ruang penyimpanan tidak valid dalam sistem.',
+            'temperature.required'     => 'Suhu ruangan wajib diisi.',
+            'temperature.numeric'      => 'Suhu ruangan harus berupa format angka.',
+            'temperature.min'          => 'Suhu ruangan tidak boleh kurang dari -50 derajat.',
+            'temperature.max'          => 'Suhu ruangan tidak boleh melebihi 100 derajat.',
+            'humidity.required'        => 'Kelembaban ruangan wajib diisi.',
+            'humidity.numeric'         => 'Kelembaban ruangan harus berupa format angka.',
+            'humidity.min'             => 'Tingkat kelembaban minimum adalah 0%.',
+            'humidity.max'             => 'Tingkat kelembaban maksimum adalah 100%.',
         ]);
 
-        if ($color !== 'green') {
-            App\Models\IncidentTicket::create([
-                'condition_data_id' => $condition->id,
-                'storage_room_id'   => $condition->storage_room_id,
-                'status'            => 'open',
-            ]);
-        }
+        // inputted_by selalu dari Auth::id() — tidak boleh dikirim dari frontend
+        $validated['inputted_by'] = Auth::id();
+
+        $room = StorageRoom::findOrFail($validated['storage_room_id']);
+
+        // Satu-satunya sumber logika kalkulasi warna: ConditionDataService
+        $condition = $conditionDataService->store($validated, $room);
+
+        // Proses alert dan auto-create IncidentTicket jika diperlukan
+        $alertService->processAlert($condition, $room);
 
         return response()->json(['status' => 'success', 'data' => $condition]);
     });

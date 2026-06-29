@@ -16,12 +16,15 @@ class StoreConditionDataRequest extends FormRequest
 
     /**
      * Get the validation rules that apply to the request.
+     *
+     * inputted_by tidak divalidasi di sini karena nilainya selalu diambil
+     * dari Auth::id() di controller/service — bukan dari input frontend.
+     * Ini mencegah user memanipulasi inputted_by melalui request body.
      */
     public function rules(): array
     {
         return [
             'storage_room_id' => 'required|exists:storage_rooms,id',
-            'inputted_by'     => 'required|exists:users,id',
             'temperature'     => 'required|numeric|min:-50|max:100',
             'humidity'        => 'required|numeric|min:0|max:100',
         ];
@@ -35,8 +38,6 @@ class StoreConditionDataRequest extends FormRequest
         return [
             'storage_room_id.required' => 'Ruang penyimpanan wajib dipilih.',
             'storage_room_id.exists'   => 'Ruang penyimpanan tidak valid dalam sistem.',
-            'inputted_by.required'     => 'ID Pengguna wajib disertakan.',
-            'inputted_by.exists'       => 'ID Pengguna tidak terdaftar.',
             'temperature.required'     => 'Suhu ruangan wajib diisi.',
             'temperature.numeric'      => 'Suhu ruangan harus berupa format angka.',
             'temperature.min'          => 'Suhu ruangan tidak boleh kurang dari -50 derajat.',
