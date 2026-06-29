@@ -12,23 +12,52 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // 1. Buat 1 User agar ID 1 tersedia untuk form monitoring
-        User::factory()->create([
-            'name' => 'Petugas Demo',
-            'email' => 'petugas@example.com',
-        ]);
+        // ──────────────────────────────────────────────────────────────
+        // User Selenium / Testing
+        // Gunakan firstOrCreate agar aman dijalankan ulang (idempotent)
+        // ──────────────────────────────────────────────────────────────
+        User::firstOrCreate(
+            ['email' => 'admin@lab.com'],
+            [
+                'name'     => 'Administrator Lab',
+                'password' => \Illuminate\Support\Facades\Hash::make('password123'),
+                'role'     => 'admin',
+            ]
+        );
 
-        User::factory()->create([
-            'name' => 'Manajer Laboratorium',
-            'email' => 'manajer@example.com',
-            'role' => 'admin', // Ini yang dicari oleh AlertService Anda
-        ]);
+        User::firstOrCreate(
+            ['email' => 'petugas@lab.com'],
+            [
+                'name'     => 'Petugas Lab',
+                'password' => \Illuminate\Support\Facades\Hash::make('password123'),
+                'role'     => 'petugas',
+            ]
+        );
 
-        // 2. Panggil seeder ruangan penyimpanan
-        $this->call([
-            StorageRoomSeeder::class,
-        ]);
+        // ──────────────────────────────────────────────────────────────
+        // User lama (dipertahankan agar data existing tidak rusak)
+        // ──────────────────────────────────────────────────────────────
+        User::firstOrCreate(
+            ['email' => 'petugas@example.com'],
+            [
+                'name'     => 'Petugas Demo',
+                'password' => \Illuminate\Support\Facades\Hash::make('password'),
+                'role'     => 'petugas',
+            ]
+        );
 
+        User::firstOrCreate(
+            ['email' => 'manajer@example.com'],
+            [
+                'name'     => 'Manajer Laboratorium',
+                'password' => \Illuminate\Support\Facades\Hash::make('password'),
+                'role'     => 'admin',
+            ]
+        );
+
+        // ──────────────────────────────────────────────────────────────
+        // Seeder ruangan penyimpanan (dipanggil SEKALI — bukan dua kali)
+        // ──────────────────────────────────────────────────────────────
         $this->call([
             StorageRoomSeeder::class,
         ]);

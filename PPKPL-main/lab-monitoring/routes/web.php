@@ -8,6 +8,7 @@ use App\Models\StorageRoom;
 use App\Models\CorrectiveAction;
 use App\Http\Controllers\IncidentReportController;
 use App\Http\Controllers\Auth\AuthController;
+use Illuminate\Support\Facades\Auth;
 
 /*
 |--------------------------------------------------------------------------
@@ -102,7 +103,7 @@ Route::middleware('auth')->group(function () {
 
         $condition = App\Models\ConditionData::create([
             'storage_room_id' => $request->storage_room_id,
-            'inputted_by'     => $request->inputted_by, // [CATATAN] akan diupdate ke auth()->id() di Langkah 2
+            'inputted_by'     => Auth::id(),
             'temperature'     => $temp,
             'humidity'        => $hum,
             'indicator_color' => $color,
@@ -129,7 +130,7 @@ Route::middleware('auth')->group(function () {
         $action = CorrectiveAction::create([
             'incident_ticket_id' => $id,
             'description'        => $request->description,
-            'recorded_by'        => 1, // [CATATAN] akan diupdate ke auth()->id() di Langkah 2
+            'recorded_by'        => Auth::id(),
         ]);
 
         if ($ticket->status === 'open') {

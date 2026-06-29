@@ -45,6 +45,17 @@
         .topbar-user { display: flex; align-items: center; gap: 10px; }
         .user-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--color-primary-light); color: var(--color-primary); font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
         .user-name { font-size: 13px; font-weight: 500; color: var(--color-text); }
+        .logout-btn {
+            background: none;
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            padding: 4px 12px;
+            font-size: 12px;
+            color: var(--color-text-muted);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .logout-btn:hover { background: #f1f5f9; color: var(--color-text); }
 
         .page-content { padding: 28px; flex: 1; }
 
@@ -140,8 +151,12 @@
             </div>
             
             <div class="topbar-user">
-                <div class="user-avatar">P</div>
-                <div class="user-name">Petugas Demo</div>
+                <div class="user-avatar">{{ strtoupper(substr(auth()->user()->name, 0, 1)) }}</div>
+                <div class="user-name">{{ auth()->user()->name }}</div>
+                <form method="POST" action="{{ route('logout') }}" style="margin:0;">
+                    @csrf
+                    <button type="submit" class="logout-btn">Logout</button>
+                </form>
             </div>
         </header>
 

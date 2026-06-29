@@ -61,9 +61,9 @@
 
         <div class="card-body p-4">
 
-            @if(session('error'))
+            @if ($errors->any())
                 <div class="alert alert-danger">
-                    {{ session('error') }}
+                    {{ $errors->first() }}
                 </div>
             @endif
 
@@ -80,8 +80,9 @@
                     <input
                         type="email"
                         name="email"
-                        class="form-control"
+                        class="form-control @error('email') is-invalid @enderror"
                         placeholder="Masukkan email"
+                        value="{{ old('email') }}"
                         required>
 
                 </div>
